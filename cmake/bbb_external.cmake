@@ -65,7 +65,9 @@ function(bbb_add_external)
     # Without PARENT_SCOPE the generated link command omits the -Wl,-U flags
     # from max-linker-flags.txt, causing "Undefined symbols" at link time.
     foreach(_var CMAKE_MODULE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS
-                 CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+                 CMAKE_EXE_LINKER_FLAGS CMAKE_STATIC_LINKER_FLAGS
+                 CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_RUNTIME_OUTPUT_DIRECTORY
+                 CMAKE_ARCHIVE_OUTPUT_DIRECTORY CMAKE_PDB_OUTPUT_DIRECTORY)
         if(DEFINED ${_var})
             set(${_var} "${${_var}}" PARENT_SCOPE)
         endif()
