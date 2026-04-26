@@ -101,6 +101,8 @@ cmake --build .
 
 ```cmake
 bbb_add_external(
+    [MACOS_ONLY]                    # macOS のみビルド (Windows ではスキップ)
+    [WIN32_ONLY]                    # Windows のみビルド (macOS ではスキップ)
     [DEPS lib1 lib2 ...]          # target_link_libraries に渡す依存
     [INCLUDES dir1 dir2 ...]      # target_include_directories に渡す追加パス
     [SOURCES file1.cpp ...]       # 追加ソース (省略時: *.cpp を自動収集)
@@ -112,8 +114,9 @@ bbb_add_external(
 内部で以下を処理する:
 - `C74_MIN_API_DIR` の自動探索 (`deps/min-api/` or `extern/min-api/`)
 - min-api の pretarget / post-target script の include
-- `add_library(MODULE ...)` による .mxo ビルド
+- `add_library(MODULE ...)` による .mxo / .mxe64 ビルド
 - macOS Universal Binary (`x86_64;arm64`) の設定
+- `MACOS_ONLY` / `WIN32_ONLY` によるプラットフォームガード
 - help ファイルの `help/` へのコピー
 
 ## 命名規則
