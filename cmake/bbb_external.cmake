@@ -49,16 +49,16 @@ macro(bbb_add_external)
 
     # --- collect sources ---
     if(BBB_ARG_SOURCES)
-        set(_sources ${BBB_ARG_SOURCES})
+        set(_bbb_sources ${BBB_ARG_SOURCES})
     else()
-        file(GLOB _sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+        file(GLOB _bbb_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
     endif()
 
     # --- min-api pre-target ---
     include(${C74_MIN_API_DIR}/script/min-pretarget.cmake)
 
     # --- build library ---
-    add_library(${PROJECT_NAME} MODULE ${_sources})
+    add_library(${PROJECT_NAME} MODULE ${_bbb_sources})
 
     # --- include directories ---
     target_include_directories(${PROJECT_NAME} PRIVATE ${C74_INCLUDES})
@@ -81,11 +81,11 @@ macro(bbb_add_external)
 
     # --- help file copy ---
     if(NOT BBB_ARG_NO_HELP_COPY)
-        set(_help_src "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.maxhelp")
-        set(_help_dst "${CMAKE_CURRENT_SOURCE_DIR}/../../../help/${PROJECT_NAME}.maxhelp")
-        if(EXISTS "${_help_src}")
+        set(_bbb_help_src "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.maxhelp")
+        set(_bbb_help_dst "${CMAKE_CURRENT_SOURCE_DIR}/../../../help/${PROJECT_NAME}.maxhelp")
+        if(EXISTS "${_bbb_help_src}")
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_help_src}" "${_help_dst}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_bbb_help_src}" "${_bbb_help_dst}"
             )
         endif()
     endif()
@@ -94,9 +94,9 @@ macro(bbb_add_external)
     include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
 
     # --- cleanup: unset internal variables to avoid scope pollution (macro shares caller scope) ---
-    unset(_sources)
-    unset(_help_src)
-    unset(_help_dst)
+    unset(_bbb_sources)
+    unset(_bbb_help_src)
+    unset(_bbb_help_dst)
     unset(BBB_ARG_NO_HELP_COPY)
     unset(BBB_ARG_RPATH)
     unset(BBB_ARG_DEPS)
