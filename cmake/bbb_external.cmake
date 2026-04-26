@@ -1,4 +1,4 @@
-# bbb_add_external — Max/MSP external を min-api でビルドする共通 function
+# bbb_add_external — Max/MSP external を min-api でビルドする共通 macro
 #
 # usage (in source/projects/<name>/CMakeLists.txt):
 #   bbb_add_external(
@@ -17,7 +17,7 @@
 #     b) deps/min-api/ が存在する (自動推測する)
 #   - C74_LIBRARY_OUTPUT_DIRECTORY が設定済みであること (省略時は <root>/externals)
 
-function(bbb_add_external)
+macro(bbb_add_external)
     cmake_parse_arguments(ARG
         "NO_HELP_COPY"
         "RPATH"
@@ -92,4 +92,4 @@ function(bbb_add_external)
 
     # --- min-api post-target ---
     include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
-endfunction()
+endmacro()
