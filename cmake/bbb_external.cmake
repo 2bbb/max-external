@@ -92,4 +92,14 @@ macro(bbb_add_external)
 
     # --- min-api post-target ---
     include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
+
+    # --- cleanup: unset internal variables to avoid scope pollution (macro shares caller scope) ---
+    unset(_sources)
+    unset(_help_src)
+    unset(_help_dst)
+    unset(BBB_ARG_NO_HELP_COPY)
+    unset(BBB_ARG_RPATH)
+    unset(BBB_ARG_DEPS)
+    unset(BBB_ARG_INCLUDES)
+    unset(BBB_ARG_SOURCES)
 endmacro()
