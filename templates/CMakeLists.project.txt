@@ -11,8 +11,15 @@
 #       DEPS pthread somelib
 #       INCLUDES ${SOME_DIR}/include
 #   )
+#
+# Platform-specific:
+#   bbb_add_external(MACOS_ONLY)       # skip on Windows
+#   bbb_add_external(WIN32_ONLY)       # skip on macOS
+#   bbb_add_external(MACOS_ONLY DEPS "-framework CoreServices")
 
 bbb_add_external(
+	# MACOS_ONLY                       # include only on macOS
+	# WIN32_ONLY                       # include only on Windows
 	# DEPS        <lib1> <lib2> ...
 	# INCLUDES    <dir1> <dir2> ...
 	# SOURCES     <extra.cpp> ...    (omit to auto-glob *.cpp)

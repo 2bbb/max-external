@@ -164,3 +164,23 @@ if (!patcher) {
 }
 c74::min::symbol filepath = c74::max::object_attr_getsym(patcher, c74::max::gensym("filepath"));
 ```
+
+## 12. プラットフォーム依存 API と MACOS_ONLY ガード
+
+以下の API/ヘッダは Windows に存在せず、ビルドエラーになる:
+
+- `CommonCrypto/CommonDigest.h` → Windows: CryptoAPI または OpenSSL
+- `CoreServices/CoreServices.h` → Windows: `ReadDirectoryChangesW`
+- `popen()` / `pclose()` → Windows: `_popen()` / `_pclose()` (挙動が異なる)
+- `<regex.h>` (POSIX regex) → Windows: C++11 `<regex>`
+- `<unistd.h>` → Windows に存在しない
+
+macOS 専用の external は `CMakeLists.txt` で `MACOS_ONLY` を指定すること:
+
+```cmake
+bbb_add_external(MACOS_ONLY)
+```
+
+クロスプラットフォーム対応の external では `#ifdef _WIN32` で実装を分けること。
+`bbb_add_external()` の `MACOS_ONLY` / `WIN32_ONLY` オプションは
+`cmake/bbb_external.cmake` 側で `if(NOT APPLE) return()` として処理される。
