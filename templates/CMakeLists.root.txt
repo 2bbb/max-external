@@ -22,7 +22,7 @@ endif()
 # add_custom_target(generate_version ALL
 #     COMMAND ${CMAKE_COMMAND}
 #         -DWORKING_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-#         -DVERSION_FILE=${CMAKE_CURRENT_SOURCE_DIR}/source/__PACKAGE_NAME__/version.h
+#         -DVERSION_FILE=${CMAKE_CURRENT_SOURCE_DIR}/source/${PROJECT_NAME}/version.h
 #         -DVERSION_MACRO=${BBB_VERSION_MACRO}
 #         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_version.cmake
 # )
