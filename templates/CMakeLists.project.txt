@@ -1,0 +1,20 @@
+# source/projects/<EXTERNAL_NAME>/CMakeLists.txt
+#
+# This file is loaded via add_subdirectory from the root CMakeLists.txt.
+# PROJECT_NAME is automatically set to the directory name (i.e. <EXTERNAL_NAME>).
+#
+# Minimal usage:
+#   bbb_add_external()
+#
+# With dependencies and extra includes:
+#   bbb_add_external(
+#       DEPS pthread somelib
+#       INCLUDES ${SOME_DIR}/include
+#   )
+
+bbb_add_external(
+	# DEPS        <lib1> <lib2> ...
+	# INCLUDES    <dir1> <dir2> ...
+	# SOURCES     <extra.cpp> ...    (omit to auto-glob *.cpp)
+	# NO_HELP_COPY                   (set to skip .maxhelp copy to help/)
+)
