@@ -28,12 +28,15 @@ macro(bbb_add_external)
     )
 
     # --- platform guard ---
+    set(_bbb_should_build TRUE)
     if(BBB_ARG_MACOS_ONLY AND NOT APPLE)
-        return()
+        set(_bbb_should_build FALSE)
     endif()
     if(BBB_ARG_WIN32_ONLY AND NOT WIN32)
-        return()
+        set(_bbb_should_build FALSE)
     endif()
+
+    if(_bbb_should_build)
 
     # --- min-api path resolution ---
     if(NOT DEFINED C74_MIN_API_DIR)
@@ -133,10 +136,13 @@ macro(bbb_add_external)
     # --- min-api post-target ---
     include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
 
+    endif() # _bbb_should_build
+
     # --- cleanup: unset internal variables to avoid scope pollution (macro shares caller scope) ---
     unset(_bbb_sources)
     unset(_bbb_help_src)
     unset(_bbb_help_dst)
+    unset(_bbb_should_build)
     unset(BBB_ARG_NO_HELP_COPY)
     unset(BBB_ARG_MACOS_ONLY)
     unset(BBB_ARG_WIN32_ONLY)
