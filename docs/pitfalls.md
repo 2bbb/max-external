@@ -131,8 +131,8 @@ oscpp 等の `NIL` enum 値と衝突する場合:
 // NG: コンパイルエラー
 auto s = std::string(my_symbol_attr);
 
-// OK: .get() で1行変換
-auto s = std::string(my_symbol_attr.get());
+// OK: .get().c_str() で曖昧さなく1行変換
+auto s = std::string(my_symbol_attr.get().c_str());
 
 // または明示的に2段階で
 c74::min::symbol sym = my_symbol_attr;
@@ -160,7 +160,7 @@ auto obj = this->maxobj();
 auto patcher = c74::max::object_attr_getobj(obj, c74::max::gensym("patcher"));
 if (!patcher) {
     cerr << "patcher not available" << c74::min::endl;
-    return {};  // MIN_FUNCTION → return {}、void関数 → return;、setter → return args;
+    return {};  // ※文脈により変えること: MIN_FUNCTION→return {}、void関数→return;、setter→return args;
 }
 c74::min::symbol filepath = c74::max::object_attr_getsym(patcher, c74::max::gensym("filepath"));
 ```
