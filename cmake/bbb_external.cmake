@@ -64,6 +64,9 @@ function(bbb_add_external)
     # are confined to the function scope and silently dropped on return.
     # Without PARENT_SCOPE the generated link command omits the -Wl,-U flags
     # from max-linker-flags.txt, causing "Undefined symbols" at link time.
+    # NOTE: Only the four standard CMake configurations are propagated.
+    # Custom configurations (e.g. RelWithAsserts) are not covered; use
+    # target-level properties if you need per-config behavior beyond these.
     foreach(_var CMAKE_MODULE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS
                  CMAKE_EXE_LINKER_FLAGS CMAKE_STATIC_LINKER_FLAGS
                  CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_RUNTIME_OUTPUT_DIRECTORY
