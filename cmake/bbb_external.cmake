@@ -38,7 +38,6 @@ macro(bbb_add_external)
 
     # --- output directory ---
     if(NOT DEFINED C74_LIBRARY_OUTPUT_DIRECTORY)
-        # walk up to find project root (heuristic: look for package-info.json or CMakeLists.txt with project())
         set(C74_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals")
     endif()
 
@@ -56,6 +55,37 @@ macro(bbb_add_external)
 
     # --- min-api pre-target ---
     include(${C74_MIN_API_DIR}/script/min-pretarget.cmake)
+
+    # --- propagate directory-level variables to parent scope ---
+    # min-pretarget -> max-pretarget sets CMAKE_*_LINKER_FLAGS and
+    # CMAKE_*_OUTPUT_DIRECTORY.  These are directory-scope variables
+    # that the CMake generator reads when producing link commands and output
+    # paths.  Because we are inside a function(), changes to these variables
+    # are confined to the function scope and silently dropped on return.
+    # Without PARENT_SCOPE the generated link command omits the -Wl,-U flags
+    # from max-linker-flags.txt, causing "Undefined symbols" at link time.
+    # NOTE: Standard and custom build configurations are propagated.
+    # CMAKE_CONFIGURATION_TYPES (multi-config) and CMAKE_BUILD_TYPE
+    # (single-config) are included alongside the four standard configs.
+    foreach(_var CMAKE_MODULE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS
+                 CMAKE_EXE_LINKER_FLAGS CMAKE_STATIC_LINKER_FLAGS
+                 CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_MSVC_RUNTIME_LIBRARY
+                 CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_RUNTIME_OUTPUT_DIRECTORY
+                 CMAKE_ARCHIVE_OUTPUT_DIRECTORY CMAKE_PDB_OUTPUT_DIRECTORY
+                 CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY
+                 CMAKE_INTERPROCEDURAL_OPTIMIZATION CMAKE_POSITION_INDEPENDENT_CODE
+                 CMAKE_OSX_DEPLOYMENT_TARGET)
+        if(DEFINED ${_var})
+            set(${_var} "${${_var}}" PARENT_SCOPE)
+        endif()
+        foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL
+                       ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
+            string(TOUPPER "${_config}" _config_upper)
+            if(DEFINED ${_var}_${_config_upper})
+                set(${_var}_${_config_upper} "${${_var}_${_config_upper}}" PARENT_SCOPE)
+            endif()
+        endforeach()
+    endforeach()
 
     # --- build library ---
     add_library(${PROJECT_NAME} MODULE ${_bbb_sources})
