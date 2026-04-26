@@ -122,3 +122,36 @@ oscpp 等の `NIL` enum 値と衝突する場合:
 | .mxo ファイル名 | ディレクトリ名と同一 | `bbb.osc.send.mxo` |
 
 この変換は `bbb_add_external()` が自動処理するため、ディレクトリ名さえ正しければ `.mxo` 名は正しくなる。
+
+## 9. attribute\<symbol\> から std::string への変換
+
+`std::string(attr)` はコンパイルエラーになる。`c74::min::symbol` を経由すること:
+
+```cpp
+// NG: コンパイルエラー
+auto s = std::string(my_symbol_attr);
+
+// OK: 2段階変換
+c74::min::symbol sym = my_symbol_attr;
+auto s = std::string(sym);
+```
+
+## 10. std::filesystem は使えない
+
+min-api の pretarget script が `CMAKE_OSX_DEPLOYMENT_TARGET` を `10.11` に設定するため、
+`std::filesystem` (要 10.15) はすべて `unavailable` エラーになる。
+パス操作は `std::string` の `find_last_of` / `substr` 等で代替すること。
+
+## 11. Max オブジェクトへのアクセス
+
+`m_maxobj` は private メンバ。パッチャー情報等の Max API 呼び出しには public メソッド `maxobj()` を使う:
+
+```cpp
+// NG: private アクセスエラー
+auto obj = static_cast<c74::max::t_object*>(this->m_maxobj);
+
+// OK: public メソッド経由
+auto obj = this->maxobj();
+auto patcher = c74::max::object_attr_getobj(obj, c74::max::gensym("patcher"));
+auto filepath = c74::max::object_attr_getsym(patcher, c74::max::gensym("filepath"));
+```
