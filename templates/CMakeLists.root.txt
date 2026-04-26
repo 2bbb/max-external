@@ -16,15 +16,15 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 endif()
 
 # --- version generation (optional: uncomment to enable) ---
-# set(__VERSION_MACRO __PACKAGE_NAME_UPPER___VERSION)
-# string(TOUPPER ${PROJECT_NAME} __PACKAGE_NAME_UPPER__)
-# string(REPLACE "." "_" __VERSION_MACRO ${__PACKAGE_NAME_UPPER___VERSION})
+# string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" BBB_PACKAGE_NAME_UPPER)
+# string(TOUPPER "${BBB_PACKAGE_NAME_UPPER}" BBB_PACKAGE_NAME_UPPER)
+# set(BBB_VERSION_MACRO "${BBB_PACKAGE_NAME_UPPER}_VERSION")
 # add_custom_target(generate_version ALL
-#     COMMAND ${CMAKE_COMMAND}
-#         -DWORKING_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-#         -DVERSION_FILE=${CMAKE_CURRENT_SOURCE_DIR}/source/__PACKAGE_NAME__/version.h
-#         -DVERSION_MACRO=${__VERSION_MACRO}
-#         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_version.cmake
+#     COMMAND "${CMAKE_COMMAND}"
+#         -DWORKING_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+#         -DVERSION_FILE="${CMAKE_CURRENT_SOURCE_DIR}/source/${PROJECT_NAME}/version.h"
+#         -DVERSION_MACRO="${BBB_VERSION_MACRO}"
+#         -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_version.cmake"
 # )
 
 # --- external dependencies (add as needed) ---
