@@ -131,7 +131,10 @@ oscpp 等の `NIL` enum 値と衝突する場合:
 // NG: コンパイルエラー
 auto s = std::string(my_symbol_attr);
 
-// OK: 2段階変換
+// OK: .get() で1行変換
+auto s = std::string(my_symbol_attr.get());
+
+// または明示的に2段階で
 c74::min::symbol sym = my_symbol_attr;
 auto s = std::string(sym);
 ```
@@ -140,7 +143,8 @@ auto s = std::string(sym);
 
 min-api の pretarget script が `CMAKE_OSX_DEPLOYMENT_TARGET` を `10.11` に設定するため、
 `std::filesystem` (要 10.15) はすべて `unavailable` エラーになる。
-パス操作は `std::string` の `find_last_of` / `substr` 等で代替すること。
+パス操作は `c74::min::path` クラス（Max 特有のパス形式を抽象化）を優先し、
+それで足りない部分を `std::string` の `find_last_of` / `substr` 等で代替すること。
 
 ## 11. Max オブジェクトへのアクセス
 
