@@ -122,3 +122,45 @@ oscpp 等の `NIL` enum 値と衝突する場合:
 | .mxo ファイル名 | ディレクトリ名と同一 | `bbb.osc.send.mxo` |
 
 この変換は `bbb_add_external()` が自動処理するため、ディレクトリ名さえ正しければ `.mxo` 名は正しくなる。
+
+## 9. attribute\<symbol\> から std::string への変換
+
+`std::string(attr)` はコンパイルエラーになる。`c74::min::symbol` を経由すること:
+
+```cpp
+// NG: コンパイルエラー
+auto s = std::string(my_symbol_attr);
+
+// OK: .get().c_str() で曖昧さなく1行変換
+auto s = std::string(my_symbol_attr.get().c_str());
+
+// または明示的に2段階で
+c74::min::symbol sym = my_symbol_attr;
+auto s = std::string(sym);
+```
+
+## 10. std::filesystem は使えない
+
+min-api の pretarget script が `CMAKE_OSX_DEPLOYMENT_TARGET` を `10.11` に設定するため、
+`std::filesystem` (要 10.15) はすべて `unavailable` エラーになる。
+パス操作は `c74::min::path` クラス（Max 特有のパス形式を抽象化）を優先し、
+それで足りない部分を `std::string` の `find_last_of` / `substr` 等で代替すること。
+
+## 11. Max オブジェクトへのアクセス
+
+`m_maxobj` は private メンバ。パッチャー情報等の Max API 呼び出しには public メソッド `maxobj()` を使う。
+以下は `MIN_FUNCTION` 内の例（他の文脈では return 文を適切に変えること）:
+
+```cpp
+// NG: private アクセスエラー
+auto obj = static_cast<c74::max::t_object*>(this->m_maxobj);
+
+// OK: public メソッド経由 (patcher の NULL チェックを忘れずに)
+auto obj = this->maxobj();
+auto patcher = c74::max::object_attr_getobj(obj, c74::max::gensym("patcher"));
+if (!patcher) {
+    cerr << "patcher not available" << c74::min::endl;
+    return {};  // ※文脈により変えること: MIN_FUNCTION→return {}、void関数→return;、setter→return args;
+}
+c74::min::symbol filepath = c74::max::object_attr_getsym(patcher, c74::max::gensym("filepath"));
+```
