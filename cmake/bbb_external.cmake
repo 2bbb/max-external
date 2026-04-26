@@ -58,17 +58,28 @@ function(bbb_add_external)
 
     # --- propagate directory-level variables to parent scope ---
     # min-pretarget -> max-pretarget sets CMAKE_*_LINKER_FLAGS and
-    # CMAKE_LIBRARY_OUTPUT_DIRECTORY.  These are directory-scope variables
+    # CMAKE_*_OUTPUT_DIRECTORY.  These are directory-scope variables
     # that the CMake generator reads when producing link commands and output
     # paths.  Because we are inside a function(), changes to these variables
     # are confined to the function scope and silently dropped on return.
     # Without PARENT_SCOPE the generated link command omits the -Wl,-U flags
     # from max-linker-flags.txt, causing "Undefined symbols" at link time.
-    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}" PARENT_SCOPE)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}" PARENT_SCOPE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" PARENT_SCOPE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG}" PARENT_SCOPE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}" PARENT_SCOPE)
+    foreach(_var
+        CMAKE_MODULE_LINKER_FLAGS
+        CMAKE_SHARED_LINKER_FLAGS
+        CMAKE_LIBRARY_OUTPUT_DIRECTORY
+        CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG
+        CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE
+        CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO
+        CMAKE_RUNTIME_OUTPUT_DIRECTORY
+        CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG
+        CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE
+        CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
+    )
+        if(DEFINED ${_var})
+            set(${_var} "${${_var}}" PARENT_SCOPE)
+        endif()
+    endforeach()
 
     # --- build library ---
     add_library(${PROJECT_NAME} MODULE ${_sources})
