@@ -1,4 +1,4 @@
-# bbb_add_external — Max/MSP external を min-api でビルドする共通 function
+# bbb_add_external — Max/MSP external を min-api でビルドする共通 macro
 #
 # usage (in source/projects/<name>/CMakeLists.txt):
 #   bbb_add_external(
@@ -17,8 +17,8 @@
 #     b) deps/min-api/ が存在する (自動推測する)
 #   - C74_LIBRARY_OUTPUT_DIRECTORY が設定済みであること (省略時は <root>/externals)
 
-function(bbb_add_external)
-    cmake_parse_arguments(ARG
+macro(bbb_add_external)
+    cmake_parse_arguments(BBB_ARG
         "NO_HELP_COPY"
         "RPATH"
         "DEPS;INCLUDES;SOURCES"
@@ -48,48 +48,60 @@ function(bbb_add_external)
     endif()
 
     # --- collect sources ---
-    if(ARG_SOURCES)
-        set(_sources ${ARG_SOURCES})
+    if(BBB_ARG_SOURCES)
+        set(_bbb_sources ${BBB_ARG_SOURCES})
     else()
-        file(GLOB _sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+        file(GLOB _bbb_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
     endif()
 
     # --- min-api pre-target ---
     include(${C74_MIN_API_DIR}/script/min-pretarget.cmake)
 
     # --- build library ---
-    add_library(${PROJECT_NAME} MODULE ${_sources})
+    add_library(${PROJECT_NAME} MODULE ${_bbb_sources})
 
     # --- include directories ---
     target_include_directories(${PROJECT_NAME} PRIVATE ${C74_INCLUDES})
-    if(ARG_INCLUDES)
-        target_include_directories(${PROJECT_NAME} PRIVATE ${ARG_INCLUDES})
+    if(BBB_ARG_INCLUDES)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${BBB_ARG_INCLUDES})
     endif()
 
     # --- link dependencies ---
-    if(ARG_DEPS)
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${ARG_DEPS})
+    if(BBB_ARG_DEPS)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${BBB_ARG_DEPS})
     endif()
 
     # --- rpath (for externals that load shared libraries at runtime) ---
-    if(ARG_RPATH)
+    if(BBB_ARG_RPATH)
         set_target_properties(${PROJECT_NAME} PROPERTIES
-            BUILD_RPATH "${ARG_RPATH}"
-            INSTALL_RPATH "${ARG_RPATH}"
+            BUILD_RPATH "${BBB_ARG_RPATH}"
+            INSTALL_RPATH "${BBB_ARG_RPATH}"
         )
     endif()
 
     # --- help file copy ---
-    if(NOT ARG_NO_HELP_COPY)
-        set(_help_src "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.maxhelp")
-        set(_help_dst "${CMAKE_CURRENT_SOURCE_DIR}/../../../help/${PROJECT_NAME}.maxhelp")
-        if(EXISTS "${_help_src}")
+    if(NOT BBB_ARG_NO_HELP_COPY)
+        set(_bbb_help_src "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.maxhelp")
+        set(_bbb_help_dst "${CMAKE_CURRENT_SOURCE_DIR}/../../../help/${PROJECT_NAME}.maxhelp")
+        if(EXISTS "${_bbb_help_src}")
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_help_src}" "${_help_dst}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_bbb_help_src}" "${_bbb_help_dst}"
             )
         endif()
     endif()
 
     # --- min-api post-target ---
     include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
-endfunction()
+
+    # --- cleanup: unset internal variables to avoid scope pollution (macro shares caller scope) ---
+    unset(_bbb_sources)
+    unset(_bbb_help_src)
+    unset(_bbb_help_dst)
+    unset(BBB_ARG_NO_HELP_COPY)
+    unset(BBB_ARG_RPATH)
+    unset(BBB_ARG_DEPS)
+    unset(BBB_ARG_INCLUDES)
+    unset(BBB_ARG_SOURCES)
+    unset(BBB_ARG_UNPARSED_ARGUMENTS)
+    unset(BBB_ARG_KEYWORDS_MISSING_VALUES)
+endmacro()
