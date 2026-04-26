@@ -2,11 +2,13 @@
 #
 # usage (in source/projects/<name>/CMakeLists.txt):
 #   bbb_add_external(
-#       [DEPS lib1 lib2 ...]          # target_link_libraries に渡す依存
-#       [INCLUDES dir1 dir2 ...]      # target_include_directories に渡す追加パス
-#       [SOURCES file1.cpp ...]       # 追加ソース (省略時: *.cpp を自動収集)
-#       [RPATH path]                  # BUILD_RPATH / INSTALL_RPATH を設定
-#       [NO_HELP_COPY]                # help ファイルの自動コピーを無効化
+#       [MACOS_ONLY]                    # macOS のみビルド (Windows ではスキップ)
+#       [WIN32_ONLY]                    # Windows のみビルド (macOS ではスキップ)
+#       [DEPS lib1 lib2 ...]            # target_link_libraries に渡す依存
+#       [INCLUDES dir1 dir2 ...]        # target_include_directories に渡す追加パス
+#       [SOURCES file1.cpp ...]         # 追加ソース (省略時: *.cpp を自動収集)
+#       [RPATH path]                    # BUILD_RPATH / INSTALL_RPATH を設定
+#       [NO_HELP_COPY]                  # help ファイルの自動コピーを無効化
 #   )
 #
 # 前提:
@@ -19,11 +21,19 @@
 
 macro(bbb_add_external)
     cmake_parse_arguments(BBB_ARG
-        "NO_HELP_COPY"
+        "NO_HELP_COPY;MACOS_ONLY;WIN32_ONLY"
         "RPATH"
         "DEPS;INCLUDES;SOURCES"
         ${ARGN}
     )
+
+    # --- platform guard ---
+    if(BBB_ARG_MACOS_ONLY AND NOT APPLE)
+        return()
+    endif()
+    if(BBB_ARG_WIN32_ONLY AND NOT WIN32)
+        return()
+    endif()
 
     # --- min-api path resolution ---
     if(NOT DEFINED C74_MIN_API_DIR)
@@ -128,6 +138,8 @@ macro(bbb_add_external)
     unset(_bbb_help_src)
     unset(_bbb_help_dst)
     unset(BBB_ARG_NO_HELP_COPY)
+    unset(BBB_ARG_MACOS_ONLY)
+    unset(BBB_ARG_WIN32_ONLY)
     unset(BBB_ARG_RPATH)
     unset(BBB_ARG_DEPS)
     unset(BBB_ARG_INCLUDES)
