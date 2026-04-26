@@ -183,4 +183,5 @@ bbb_add_external(MACOS_ONLY)
 
 クロスプラットフォーム対応の external では `#ifdef _WIN32` で実装を分けること。
 `bbb_add_external()` の `MACOS_ONLY` / `WIN32_ONLY` オプションは
-`cmake/bbb_external.cmake` 側で `if(NOT APPLE) return()` として処理される。
+`cmake/bbb_external.cmake` 側でプラットフォーム判定を行い、一致しない場合は
+ビルド対象から除外される。
