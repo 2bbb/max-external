@@ -64,9 +64,9 @@ function(bbb_add_external)
     # are confined to the function scope and silently dropped on return.
     # Without PARENT_SCOPE the generated link command omits the -Wl,-U flags
     # from max-linker-flags.txt, causing "Undefined symbols" at link time.
-    # NOTE: Only the four standard CMake configurations are propagated.
-    # Custom configurations (e.g. RelWithAsserts) are not covered; use
-    # target-level properties if you need per-config behavior beyond these.
+    # NOTE: Standard and custom build configurations are propagated.
+    # CMAKE_CONFIGURATION_TYPES (multi-config) and CMAKE_BUILD_TYPE
+    # (single-config) are included alongside the four standard configs.
     foreach(_var CMAKE_MODULE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS
                  CMAKE_EXE_LINKER_FLAGS CMAKE_STATIC_LINKER_FLAGS
                  CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_RUNTIME_OUTPUT_DIRECTORY
@@ -75,9 +75,11 @@ function(bbb_add_external)
         if(DEFINED ${_var})
             set(${_var} "${${_var}}" PARENT_SCOPE)
         endif()
-        foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-            if(DEFINED ${_var}_${_config})
-                set(${_var}_${_config} "${${_var}_${_config}}" PARENT_SCOPE)
+        foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL
+                       ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
+            string(TOUPPER "${_config}" _config_upper)
+            if(DEFINED ${_var}_${_config_upper})
+                set(${_var}_${_config_upper} "${${_var}_${_config_upper}}" PARENT_SCOPE)
             endif()
         endforeach()
     endforeach()
