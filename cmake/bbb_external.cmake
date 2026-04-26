@@ -64,21 +64,16 @@ function(bbb_add_external)
     # are confined to the function scope and silently dropped on return.
     # Without PARENT_SCOPE the generated link command omits the -Wl,-U flags
     # from max-linker-flags.txt, causing "Undefined symbols" at link time.
-    foreach(_var
-        CMAKE_MODULE_LINKER_FLAGS
-        CMAKE_SHARED_LINKER_FLAGS
-        CMAKE_LIBRARY_OUTPUT_DIRECTORY
-        CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG
-        CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE
-        CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO
-        CMAKE_RUNTIME_OUTPUT_DIRECTORY
-        CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG
-        CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE
-        CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
-    )
+    foreach(_var CMAKE_MODULE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS
+                 CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_RUNTIME_OUTPUT_DIRECTORY)
         if(DEFINED ${_var})
             set(${_var} "${${_var}}" PARENT_SCOPE)
         endif()
+        foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+            if(DEFINED ${_var}_${_config})
+                set(${_var}_${_config} "${${_var}_${_config}}" PARENT_SCOPE)
+            endif()
+        endforeach()
     endforeach()
 
     # --- build library ---
