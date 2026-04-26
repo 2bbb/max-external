@@ -155,7 +155,7 @@ auto obj = this->maxobj();
 auto patcher = c74::max::object_attr_getobj(obj, c74::max::gensym("patcher"));
 if (!patcher) {
     cerr << "patcher not available" << c74::min::endl;
-    return;
+    return {};
 }
 auto filepath = c74::max::object_attr_getsym(patcher, c74::max::gensym("filepath"));
 ```
