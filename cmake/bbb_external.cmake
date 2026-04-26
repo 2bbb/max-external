@@ -18,7 +18,7 @@
 #   - C74_LIBRARY_OUTPUT_DIRECTORY が設定済みであること (省略時は <root>/externals)
 
 macro(bbb_add_external)
-    cmake_parse_arguments(ARG
+    cmake_parse_arguments(BBB_ARG
         "NO_HELP_COPY"
         "RPATH"
         "DEPS;INCLUDES;SOURCES"
@@ -48,8 +48,8 @@ macro(bbb_add_external)
     endif()
 
     # --- collect sources ---
-    if(ARG_SOURCES)
-        set(_sources ${ARG_SOURCES})
+    if(BBB_ARG_SOURCES)
+        set(_sources ${BBB_ARG_SOURCES})
     else()
         file(GLOB _sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
     endif()
@@ -62,25 +62,25 @@ macro(bbb_add_external)
 
     # --- include directories ---
     target_include_directories(${PROJECT_NAME} PRIVATE ${C74_INCLUDES})
-    if(ARG_INCLUDES)
-        target_include_directories(${PROJECT_NAME} PRIVATE ${ARG_INCLUDES})
+    if(BBB_ARG_INCLUDES)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${BBB_ARG_INCLUDES})
     endif()
 
     # --- link dependencies ---
-    if(ARG_DEPS)
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${ARG_DEPS})
+    if(BBB_ARG_DEPS)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${BBB_ARG_DEPS})
     endif()
 
     # --- rpath (for externals that load shared libraries at runtime) ---
-    if(ARG_RPATH)
+    if(BBB_ARG_RPATH)
         set_target_properties(${PROJECT_NAME} PROPERTIES
-            BUILD_RPATH "${ARG_RPATH}"
-            INSTALL_RPATH "${ARG_RPATH}"
+            BUILD_RPATH "${BBB_ARG_RPATH}"
+            INSTALL_RPATH "${BBB_ARG_RPATH}"
         )
     endif()
 
     # --- help file copy ---
-    if(NOT ARG_NO_HELP_COPY)
+    if(NOT BBB_ARG_NO_HELP_COPY)
         set(_help_src "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.maxhelp")
         set(_help_dst "${CMAKE_CURRENT_SOURCE_DIR}/../../../help/${PROJECT_NAME}.maxhelp")
         if(EXISTS "${_help_src}")
