@@ -16,14 +16,14 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 endif()
 
 # --- version generation (optional: uncomment to enable) ---
-# string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" __PACKAGE_NAME_UPPER__)
-# string(TOUPPER "${__PACKAGE_NAME_UPPER__}" __PACKAGE_NAME_UPPER__)
-# set(__VERSION_MACRO "${__PACKAGE_NAME_UPPER__}_VERSION")
+# string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" PACKAGE_NAME_UPPER)
+# string(TOUPPER "${PACKAGE_NAME_UPPER}" PACKAGE_NAME_UPPER)
+# set(VERSION_MACRO "${PACKAGE_NAME_UPPER}_VERSION")
 # add_custom_target(generate_version ALL
 #     COMMAND ${CMAKE_COMMAND}
 #         -DWORKING_DIR=${CMAKE_CURRENT_SOURCE_DIR}
 #         -DVERSION_FILE=${CMAKE_CURRENT_SOURCE_DIR}/source/__PACKAGE_NAME__/version.h
-#         -DVERSION_MACRO=${__VERSION_MACRO}
+#         -DVERSION_MACRO=${VERSION_MACRO}
 #         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_version.cmake
 # )
 
