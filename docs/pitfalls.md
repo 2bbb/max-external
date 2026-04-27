@@ -185,3 +185,83 @@ bbb_add_external(MACOS_ONLY)
 `bbb_add_external()` の `MACOS_ONLY` / `WIN32_ONLY` オプションは
 `cmake/bbb_external.cmake` 側でプラットフォーム判定を行い、一致しない場合は
 ビルド対象から除外される。
+
+## 13. MIN_TAGS はカンマ区切り1文字列
+
+タグを複数指定する場合、brace-enclosed list ではなくカンマ区切りの**単一文字列**にすること:
+
+```cpp
+// NG: brace-enclosed list — コンパイルエラー
+MIN_TAGS{"timecode", "ltc", "smpte", "audio"};
+
+// OK: カンマ区切り1文字列
+MIN_TAGS{"timecode, ltc, smpte, audio"};
+```
+
+内部的に `str::split(class_tags, ',')` で分割される。
+
+## 14. sample_operator のテンプレート引数
+
+`sample_operator` のテンプレート引数は `<input_count, output_count>`。
+クラス名を渡さないこと:
+
+```cpp
+// NG: クラス名を渡す — コンパイルエラー
+class my_object : public c74::min::sample_operator<my_object, 1> { ... };
+
+// OK: 入出力数のみ
+class my_object : public c74::min::sample_operator<1, 1> { ... };
+```
+
+## 15. atom からの int 取得
+
+`atom::get<int>()` は min-api に存在しない。`static_cast<int>()` を使う:
+
+```cpp
+// NG: 存在しない
+int val = c74::min::atom::get<int>(args[0]);
+
+// OK: 暗黙変換をキャスト
+int val = static_cast<int>(args[0]);
+```
+
+## 16. attribute::get() は非 const
+
+`attribute<T>::get()` は `const` 修飾されていない。const メンバ関数内では
+暗黙の `operator T()` 変換を使う:
+
+```cpp
+// NG: const メソッド内で .get() を呼ぶとコンパイルエラー
+int val = fps.get();
+
+// OK: 暗黙変換を使う
+int val = static_cast<int>(fps);
+// または switch 文で直接: switch (fps) { ... }
+```
+
+## 17. min-api の pretarget/posttarget とサブディレクトリ構造
+
+min-api の `min-pretarget.cmake` / `min-posttarget.cmake` は各 external ごとに
+`project()` を呼ぶことを前提としている。`add_subdirectory()` で複数 external を
+管理する場合は、これらのスクリプトに依存せず自前で CMake 設定を書く必要がある。
+
+必要な設定要素:
+- `C74_MIN_API_DIR` / `C74_MAX_SDK_DIR` / `C74_SUPPORT_DIR` の導出
+- `CXX_STANDARD 17`
+- macOS: `BUNDLE True`, `BUNDLE_EXTENSION "mxo"`, `MaxAudioAPI` / `JitterAPI` のリンク, `PkgInfo` コピー, codesign
+- Windows: `SUFFIX ".mxe64"`, `MaxAPI.lib` / `MaxAudio.lib` / `jitlib.lib` のリンク, `WIN_VERSION` 定義
+- 共通: `PREFIX ""`, include directories, `DC74_MIN_API` 定義
+
+## 18. Windows: RUNTIME_OUTPUT_DIRECTORY
+
+Windows では `.mxe64` (DLL) は `RUNTIME_OUTPUT_DIRECTORY` に出力される。
+`LIBRARY_OUTPUT_DIRECTORY` だけでは不満足。両方設定すること:
+
+```cmake
+set_target_properties(${TARGET} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${OUT_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${OUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${OUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${OUT_DIR}"
+)
+```
