@@ -129,7 +129,7 @@ bbb_add_external(
 
 内部で以下を処理する:
 - `C74_MIN_API_DIR` の自動探索 (`deps/min-api/` or `extern/min-api/`)
-- min-api の pretarget / post-target script の include
+- min-api の pretarget / posttarget script の include
 - `add_library(MODULE ...)` による .mxo / .mxe64 ビルド
 - macOS Universal Binary (`x86_64;arm64`) の設定
 - Windows `.mxe64` サフィックス・lib リンク・出力ディレクトリ設定
