@@ -7,9 +7,10 @@ description: Max/MSPのエクスターナルオブジェクトをmin-api + CMake
 
 ## 前提
 
-- macOS
+- macOS / Windows
 - CMake 3.19+
-- Xcode CLI tools
+- macOS: Xcode CLI tools
+- Windows: Visual Studio 2022 (C++ デスクトップ開発ワークロード)
 - min-api / max-sdk-base は git submodule として `deps/min-api/` に配置済みであること
 
 ## プロジェクト構造
@@ -93,7 +94,20 @@ cmake ..
 cmake --build .
 ```
 
-成果物は `externals/<NAME>.mxo` に出力される。
+成果物は `externals/<NAME>.mxo` (macOS) / `externals/<NAME>.mxe64` (Windows) に出力される。
+
+### bbb_add_external() の内部処理
+
+`cmake/bbb_external.cmake` は min-api の pretarget/posttarget スクリプトに依存せず、
+自前で CMake 設定を行う（サブディレクトリ構造で `add_subdirectory()` を使う場合、
+min-api スクリプトが前提とする `project()` 呼び出しと競合するため）。
+
+プラットフォームごとの設定:
+- **macOS**: `BUNDLE True`, `BUNDLE_EXTENSION "mxo"`, Universal Binary (`x86_64;arm64`),
+  `MaxAudioAPI` / `JitterAPI` framework リンク, `PkgInfo` コピー, ad-hoc codesign
+- **Windows**: `SUFFIX ".mxe64"`, `MaxAPI.lib` / `MaxAudio.lib` / `jitlib.lib` リンク,
+  `RUNTIME_OUTPUT_DIRECTORY` 設定, `WIN_VERSION` 定義
+- **共通**: `CXX_STANDARD 17`, `PREFIX ""`, `DC74_MIN_API` 定義, `C74_MIN_API_DIR` / `C74_MAX_SDK_DIR` 自動導出
 
 ## bbb_add_external() リファレンス
 
@@ -111,10 +125,11 @@ bbb_add_external(
 
 内部で以下を処理する:
 - `C74_MIN_API_DIR` の自動探索 (`deps/min-api/` or `extern/min-api/`)
-- min-api の pretarget / post-target script の include
-- `add_library(MODULE ...)` による .mxo ビルド
+- `add_library(MODULE ...)` による .mxo / .mxe64 ビルド
 - macOS Universal Binary (`x86_64;arm64`) の設定
+- Windows `.mxe64` サフィックス・lib リンク・出力ディレクトリ設定
 - help ファイルの `help/` へのコピー
+- `MACOS_ONLY` / `WIN32_ONLY` オプションによるプラットフォームフィルタリング
 
 ## 命名規則
 
