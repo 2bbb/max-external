@@ -101,8 +101,8 @@ cmake --build .
 
 ```cmake
 bbb_add_external(
-    [MACOS_ONLY]                    # macOS のみビルド (Windows ではスキップ)
-    [WIN32_ONLY]                    # Windows のみビルド (macOS ではスキップ)
+    [MACOS_ONLY]                  # macOS のみビルド (Windows ではスキップ)
+    [WIN32_ONLY]                  # Windows のみビルド (macOS ではスキップ)
     [DEPS lib1 lib2 ...]          # target_link_libraries に渡す依存
     [INCLUDES dir1 dir2 ...]      # target_include_directories に渡す追加パス
     [SOURCES file1.cpp ...]       # 追加ソース (省略時: *.cpp を自動収集)
