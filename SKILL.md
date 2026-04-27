@@ -98,11 +98,13 @@ cmake --build .
 
 ### bbb_add_external() の内部処理
 
-`cmake/bbb_external.cmake` は min-api の pretarget/posttarget スクリプトに依存せず、
-自前で CMake 設定を行う（サブディレクトリ構造で `add_subdirectory()` を使う場合、
-min-api スクリプトが前提とする `project()` 呼び出しと競合するため）。
+`cmake/bbb_external.cmake` は min-api の `min-pretarget.cmake` / `min-posttarget.cmake`
+を include する。pretarget/posttarget は各 external ごとに `project()` が呼ばれることを
+前提としているが、`bbb_add_external()` はマクロ内でこれらを include した後、
+ディレクトリスコープ変数を `PARENT_SCOPE` で伝播させることで `add_subdirectory()` 
+構造でも正しく動作するようにしている。
 
-プラットフォームごとの設定:
+プラットフォームごとの設定は pretarget/posttarget スクリプト経由で適用される:
 - **macOS**: `BUNDLE True`, `BUNDLE_EXTENSION "mxo"`, Universal Binary (`x86_64;arm64`),
   `MaxAudioAPI` / `JitterAPI` framework リンク, `PkgInfo` コピー, ad-hoc codesign
 - **Windows**: `SUFFIX ".mxe64"`, `MaxAPI.lib` / `MaxAudio.lib` / `jitlib.lib` リンク,
