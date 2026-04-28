@@ -16,6 +16,9 @@ public:
 	// === Sink (process incoming matrix) ===
 	// calc_cell is called for every pixel. Capture full frame at (0,0).
 		// Uses dimstride for row-by-row copy to handle padded matrices.
+	// WARNING: If m_frame_buffer is shared with a worker thread (e.g. encoder),
+	// resize() may reallocate and invalidate pointers held by that thread.
+	// Use a double-buffer or synchronize access if the buffer is read concurrently.
 	template <class matrix_type, size_t plane_count>
 	c74::min::cell<matrix_type, plane_count> calc_cell(
 		c74::min::cell<matrix_type, plane_count> input,

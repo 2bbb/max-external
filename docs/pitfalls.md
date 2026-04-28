@@ -423,6 +423,10 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
 }
 ```
 
+**注意:** `m_frame_buffer` をワーカースレッド (エンコーダ等) と共有する場合、
+`resize()` による再確保がポインタを無効化する可能性がある。
+ダブルバッファまたは mutex で同期すること。
+
 **generator mode (受信側)** では入力 matrix が不要。`calc_cell` 内でデコード済みデータを
 書き込む。outlet type は `"jit_matrix"` になる。
 

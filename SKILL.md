@@ -185,7 +185,9 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
 ### Sink (入力 matrix を処理)
 
 `info.m_bip` が生ピクセルデータポインタ。position(0,0) で一括キャプチャ。
-`dimstride` を使って行ごとにコピーしパディングに対応:
+`dimstride` を使って行ごとにコピーしパディングに対応。
+**注意:** `m_frame_buffer` をワーカースレッドと共有する場合は `resize()` の再確保に注意。
+ダブルバッファまたは同期を検討すること。
 
 ```cpp
 if (position.x() == 0 && position.y() == 0) {
