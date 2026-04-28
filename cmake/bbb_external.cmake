@@ -108,7 +108,7 @@ macro(bbb_add_external)
     # of the actual C++ standard, causing #error in headers that check it
     # (e.g. bbb/core/constants.hpp).
     if(MSVC)
-        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:__cplusplus)
+        target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     endif()
 
     # --- include directories ---
