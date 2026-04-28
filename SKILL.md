@@ -27,11 +27,10 @@ project/
 │   ├── projects/
 │   │   └── bbb.xxx.yyy/        # external ごとのディレクトリ
 │   │       ├── CMakeLists.txt  # bbb_add_external() 呼び出しのみ (1〜5行)
-│   │       ├── bbb.xxx.yyy.cpp
-│   │       └── bbb.xxx.yyy.maxhelp
+│   │       └── bbb.xxx.yyy.cpp
 │   └── bbb/                    # 共有ヘッダ (任意)
-├── externals/                  # ビルド成果物 (.mxo)
-├── help/                       # helpファイルのコピー
+├── help/                       # .maxhelp ファイル (正規の場所)
+├── externals/                  # ビルド成果物 (.mxo / .mxe64)
 └── package-info.json
 ```
 
@@ -123,7 +122,6 @@ bbb_add_external(
     [INCLUDES dir1 dir2 ...]      # target_include_directories に渡す追加パス
     [SOURCES file1.cpp ...]       # 追加ソース (省略時: *.cpp を自動収集)
     [RPATH path]                  # BUILD_RPATH / INSTALL_RPATH を設定
-    [NO_HELP_COPY]                # help ファイルの自動コピーを無効化
 )
 ```
 
@@ -133,7 +131,6 @@ bbb_add_external(
 - `add_library(MODULE ...)` による .mxo / .mxe64 ビルド
 - macOS Universal Binary (`x86_64;arm64`) の設定
 - Windows `.mxe64` サフィックス・lib リンク・出力ディレクトリ設定
-- help ファイルの `help/` へのコピー
 - `MACOS_ONLY` / `WIN32_ONLY` オプションによるプラットフォームフィルタリング
 
 ## 命名規則
