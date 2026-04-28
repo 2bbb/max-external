@@ -33,12 +33,16 @@ public:
 
 	// === Generator (output matrix from external data) ===
 	// Uncomment and replace m_decoded_* with your data source.
+	// IMPORTANT: Do NOT lock a mutex inside calc_cell per-pixel — it kills
+	// real-time performance. Instead, swap the buffer at position(0,0) only.
 	//
 	// Member variables you'll need:
 	//   std::vector<uint8_t> m_decoded_frame;
+	//   std::vector<uint8_t> m_render_frame;
 	//   int m_decoded_width = 0;
 	//   int m_decoded_height = 0;
 	//   std::mutex m_frame_mutex;
+	//   std::atomic<bool> m_has_frame{false};
 	//
 	// template <class matrix_type, size_t plane_count>
 	// c74::min::cell<matrix_type, plane_count> calc_cell(
@@ -47,18 +51,24 @@ public:
 	//     c74::min::matrix_coord& position)
 	// {
 	//     if constexpr(plane_count == 4) {
+	//         if(!m_has_frame.load(std::memory_order_acquire)) {
+	//             return {0, 0, 0, 255};
+	//         }
 	//         long x = position.x();
 	//         long y = position.y();
+	//         if(x == 0 && y == 0) {
+	//             std::lock_guard<std::mutex> lock(m_frame_mutex);
+	//             m_render_frame = m_decoded_frame;
+	//         }
 	//         if(x >= m_decoded_width || y >= m_decoded_height) {
 	//             return {0, 0, 0, 255};
 	//         }
-	//         std::lock_guard<std::mutex> lock(m_frame_mutex);
 	//         std::size_t offset = (y * m_decoded_width + x) * 4;
 	//         return {
-	//             static_cast<matrix_type>(m_decoded_frame[offset + 0]),
-	//             static_cast<matrix_type>(m_decoded_frame[offset + 1]),
-	//             static_cast<matrix_type>(m_decoded_frame[offset + 2]),
-	//             static_cast<matrix_type>(m_decoded_frame[offset + 3])
+	//             static_cast<matrix_type>(m_render_frame[offset + 0]),
+	//             static_cast<matrix_type>(m_render_frame[offset + 1]),
+	//             static_cast<matrix_type>(m_render_frame[offset + 2]),
+	//             static_cast<matrix_type>(m_render_frame[offset + 3])
 	//         };
 	//     }
 	//     return input;

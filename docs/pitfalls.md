@@ -385,10 +385,10 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
     c74::min::matrix_coord& position)
 {
     if constexpr (plane_count == 4) {
-        // RGBA のみ処理
         long x = position.x();
         long y = position.y();
-        return { r, g, b, a };
+        // e.g. return {input[0], input[1], input[2], input[3]};
+        return input;
     }
     return input;
 }
@@ -414,7 +414,7 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
         int h = static_cast<int>(info.height());
         // m_bip は生ピクセルデータ (サイズ = w * h * planecount * cellsize)
         auto size = info.width() * info.height() * info.planecount() * info.cellsize();
-        std::memcpy(buffer.data(), info.m_bip, size);
+        std::memcpy(m_frame_buffer.data(), info.m_bip, size);
     }
     return input;
 }
