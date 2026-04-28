@@ -184,11 +184,12 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
 
 ### Sink (入力 matrix を処理)
 
-`info.m_bip` が生 RGBA ポインタ。position(0,0) で一括キャプチャ:
+`info.m_bip` が生ピクセルデータポインタ。position(0,0) で一括キャプチャ:
 
 ```cpp
 if (position.x() == 0 && position.y() == 0) {
-    std::memcpy(buffer, info.m_bip, info.width() * info.height() * 4);
+    auto size = info.width() * info.height() * info.planecount() * info.cellsize();
+    std::memcpy(buffer, info.m_bip, size);
 }
 ```
 

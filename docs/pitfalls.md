@@ -412,8 +412,9 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
     if (position.x() == 0 && position.y() == 0) {
         int w = static_cast<int>(info.width());
         int h = static_cast<int>(info.height());
-        // m_bip は生 RGBA データ (w * h * 4 バイト)
-        std::memcpy(buffer.data(), info.m_bip, w * h * 4);
+        // m_bip は生ピクセルデータ (サイズ = w * h * planecount * cellsize)
+        auto size = info.width() * info.height() * info.planecount() * info.cellsize();
+        std::memcpy(buffer.data(), info.m_bip, size);
     }
     return input;
 }
