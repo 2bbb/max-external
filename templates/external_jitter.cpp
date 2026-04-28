@@ -52,7 +52,7 @@ public:
 	//             long x = position.x();
 	//             long y = position.y();
 	//             if(x == 0 && y == 0) {
-	//                 m_frame_available = m_has_frame.load(std::memory_order_acquire);
+	//                 m_frame_available = m_has_frame.exchange(false, std::memory_order_acq_rel);
 	//                 if(m_frame_available) {
 	//                     std::lock_guard<std::mutex> lock(m_frame_mutex);
 	//                     m_render_frame.swap(m_decoded_frame);

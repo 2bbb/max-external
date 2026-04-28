@@ -415,7 +415,7 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
         m_frame_buffer.resize(row_bytes * info.height());
         auto src = static_cast<const char*>(info.m_bip);
         auto dst = m_frame_buffer.data();
-        for (int y = 0; y < static_cast<int>(info.height()); ++y) {
+        for (long y = 0; y < static_cast<long>(info.height()); ++y) {
             std::memcpy(dst + y * row_bytes, src + y * info.dimstride[1], row_bytes);
         }
     }
