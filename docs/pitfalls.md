@@ -306,11 +306,15 @@ c74::min::message<> jit_gl_texture{this, "jit_gl_texture",
 ```cpp
 void* mat = c74::max::jit_object_findregistered(name);
 if (!mat) return;
+if (c74::max::jit_object_classname(mat) != c74::max::gensym("jit_matrix")) return;
+
 c74::max::t_jit_matrix_info info;
 c74::max::jit_object_method(mat, c74::max::gensym("getinfo"), &info);
 c74::max::t_atom_long savelock = (c74::max::t_atom_long)c74::max::jit_object_method(mat, c74::max::gensym("lock"), (void*)1);
 char* data = (char*)c74::max::jit_object_method(mat, c74::max::gensym("getdata"));
-// info.dim[0], info.dim[1], info.type, info.planecount 等を参照して処理
+if (data) {
+    // info.dim[0], info.dim[1], info.type, info.planecount 等を参照して処理
+}
 c74::max::jit_object_method(mat, c74::max::gensym("lock"), (void*)savelock);
 ```
 
