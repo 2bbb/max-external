@@ -15,6 +15,7 @@ public:
 
 	// === Sink (process incoming matrix) ===
 	// calc_cell is called for every pixel. Capture full frame at (0,0).
+		// Uses dimstride for row-by-row copy to handle padded matrices.
 	template <class matrix_type, size_t plane_count>
 	c74::min::cell<matrix_type, plane_count> calc_cell(
 		c74::min::cell<matrix_type, plane_count> input,
@@ -23,9 +24,13 @@ public:
 	{
 		if constexpr(plane_count == 4) {
 			if(position.x() == 0 && position.y() == 0) {
-				auto size = info.width() * info.height() * info.cellsize();
-				m_frame_buffer.resize(size);
-				std::memcpy(m_frame_buffer.data(), info.m_bip, size);
+				auto row_bytes = info.width() * info.cellsize();
+				m_frame_buffer.resize(row_bytes * info.height());
+				auto src = static_cast<const char*>(info.m_bip);
+				auto dst = m_frame_buffer.data();
+				for(long y = 0; y < static_cast<long>(info.height()); ++y) {
+					std::memcpy(dst + y * row_bytes, src + y * info.dimstride[1], row_bytes);
+				}
 			}
 			return input;
 		}
@@ -50,8 +55,10 @@ public:
 	//         long x = position.x();
 	//         long y = position.y();
 	//         if(x == 0 && y == 0) {
+	//             m_has_frame.store(false, std::memory_order_release);
 	//             std::lock_guard<std::mutex> lock(m_frame_mutex);
 	//             m_render_frame.swap(m_decoded_frame);
+	//             m_has_frame.store(true, std::memory_order_release);
 	//         }
 	//         if(x >= m_decoded_width || y >= m_decoded_height) {
 	//             return {0, 0, 0, 255};

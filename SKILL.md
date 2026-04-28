@@ -184,13 +184,18 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
 
 ### Sink (入力 matrix を処理)
 
-`info.m_bip` が生ピクセルデータポインタ。position(0,0) で一括キャプチャ:
+`info.m_bip` が生ピクセルデータポインタ。position(0,0) で一括キャプチャ。
+`dimstride` を使って行ごとにコピーしパディングに対応:
 
 ```cpp
 if (position.x() == 0 && position.y() == 0) {
-    auto size = info.width() * info.height() * info.cellsize();
-    m_frame_buffer.resize(size);
-    std::memcpy(m_frame_buffer.data(), info.m_bip, size);
+    auto row_bytes = info.width() * info.cellsize();
+    m_frame_buffer.resize(row_bytes * info.height());
+    auto src = static_cast<const char*>(info.m_bip);
+    auto dst = m_frame_buffer.data();
+    for (int y = 0; y < static_cast<int>(info.height()); ++y) {
+        std::memcpy(dst + y * row_bytes, src + y * info.dimstride[1], row_bytes);
+    }
 }
 ```
 
