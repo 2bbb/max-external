@@ -360,3 +360,153 @@ if(POLICY CMP0091)
 endif()
 project(my_project)
 ```
+
+## 18. Jitter matrix_operator<> の calc_cell テンプレート
+
+`matrix_operator<>` はテンプレート引数を取らない。`vector_operator<MyClass>` のように
+書かないこと:
+
+```cpp
+// OK
+class my_jitter : public c74::min::object<my_jitter>, public c74::min::matrix_operator<> {};
+
+// NG: コンパイルエラー
+class my_jitter : public c74::min::object<my_jitter>, public c74::min::matrix_operator<my_jitter> {};
+```
+
+`calc_cell` は `plane_count` が 1, 4, 32 など複数の値でテンプレート実体化される。
+RGBA 処理は `if constexpr` で plane_count をガードすること:
+
+```cpp
+template <class matrix_type, size_t plane_count>
+c74::min::cell<matrix_type, plane_count> calc_cell(
+    c74::min::cell<matrix_type, plane_count> input,
+    const c74::min::matrix_info& info,
+    c74::min::matrix_coord& position)
+{
+    if constexpr (plane_count == 4) {
+        // RGBA のみ処理
+        long x = position.x();
+        long y = position.y();
+        return { r, g, b, a };
+    }
+    return input;
+}
+```
+
+`if constexpr` を使わないと plane_count == 1 で4要素 return が型エラーになる。
+
+## 19. Jitter の matrix_info::m_bip は生ポインタ
+
+`m_bip` は matrix の生ピクセルデータポインタ (RGBA = `char*`, planecount=4)。
+フレーム全体を一括でキャプチャする場合、`calc_cell` 内で position(0,0) の時だけ
+処理し、それ以外は return input で通過させる:
+
+```cpp
+template <class matrix_type, size_t plane_count>
+c74::min::cell<matrix_type, plane_count> calc_cell(
+    c74::min::cell<matrix_type, plane_count> input,
+    const c74::min::matrix_info& info,
+    c74::min::matrix_coord& position)
+{
+    if (position.x() == 0 && position.y() == 0) {
+        int w = static_cast<int>(info.width());
+        int h = static_cast<int>(info.height());
+        // m_bip は生 RGBA データ (w * h * 4 バイト)
+        std::memcpy(buffer.data(), info.m_bip, w * h * 4);
+    }
+    return input;
+}
+```
+
+**generator mode (受信側)** では入力 matrix が不要。`calc_cell` 内でデコード済みデータを
+書き込む。outlet type は `"jit_matrix"` になる。
+
+## 20. MSVC と ULONG_PTR
+
+Windows API の多くは `ULONG_PTR` 型の引数を取るが、`nullptr` は暗黙変換されない。
+MSVC では `0` を使うこと:
+
+```cpp
+// NG (MSVC): error C2664: cannot convert argument from 'nullptr' to 'ULONG_PTR'
+transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, nullptr);
+
+// OK:
+transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0);
+```
+
+これは Media Foundation の `IMFTransform::ProcessMessage` に限らず、
+Windows API 全般 (RegisterClassEx, CreateWindowEx 等) で同様。
+
+## 21. IMFTransform に GetOutputType は存在しない
+
+`IMFTransform` には現在の output media type を取得する `GetOutputType` メソッドがない。
+出力タイプの取得には `GetOutputAvailableType(stream_id, index, &type)` を使う:
+
+```cpp
+// NG: リンカエラー (存在しないメソッド)
+hr = transform_->GetOutputType(stream_id, &output_type);
+
+// OK:
+hr = transform_->GetOutputAvailableType(stream_id, 0, &output_type);
+```
+
+`GetOutputAvailableType` の第二引数は type index (通常 0)。
+設定済みの output type を取得したい場合は `GetOutputCurrentType` を使う。
+
+## 22. クロスプラットフォーム .mm / .cpp ソースの CMake 分離
+
+macOS 専用の Objective-C++ ソース (`.mm`) と Windows 専用の C++ ソース (`.cpp`) は
+CMake で `if(APPLE)` / `elseif(WIN32)` で分ける:
+
+```cmake
+if(APPLE)
+    target_sources(my_lib PRIVATE
+        src/encoder_videotoolbox.mm
+        src/decoder_videotoolbox.mm
+    )
+    find_library(VIDEOTOOLBOX VideoToolbox)
+    target_link_libraries(my_lib PUBLIC ${VIDEOTOOLBOX} objc)
+    target_compile_options(my_lib PRIVATE -fobjc-arc)
+elseif(WIN32)
+    target_sources(my_lib PRIVATE
+        src/encoder_mf.cpp
+        src/decoder_mf.cpp
+    )
+    target_link_libraries(my_lib PUBLIC mfplat mf mfuuid strmiids)
+endif()
+```
+
+`.mm` ファイルには `-fobjc-arc` を忘れずに。
+
+## 23. 静的ライブラリの依存スコープ分離
+
+プラットフォーム固有のフレームワーク/ライブラリ (VideoToolbox, Media Foundation 等) を
+`PUBLIC` リンクしていると、そのライブラリに依存する全ての external に伝播する。
+audio-only external が不要な video フレームワークをリンクしてしまうのを防ぐため、
+依存スコープごとに静的ライブラリを分ける:
+
+```cmake
+# audio-only core (all externals link this)
+add_library(bbb_core STATIC
+    src/session.cpp
+    src/codec.cpp
+)
+target_link_libraries(bbb_core PUBLIC datachannel)
+
+# video extension (only video externals link this)
+add_library(bbb_video STATIC
+    src/video_encoder.cpp
+    src/video_decoder.cpp
+)
+target_link_libraries(bbb_video PUBLIC bbb_core)
+# platform-specific libs go here, not in bbb_core
+if(APPLE)
+    target_link_libraries(bbb_video PUBLIC ${VIDEOTOOLBOX})
+elseif(WIN32)
+    target_link_libraries(bbb_video PUBLIC mfplat mf)
+endif()
+```
+
+audio external: `bbb_add_external(DEPS bbb_core)`
+video external: `bbb_add_external(DEPS bbb_video)`

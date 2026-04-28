@@ -46,6 +46,7 @@ source/projects/<NAME>/CMakeLists.txt
 ```
 
 cpp は `templates/external.cpp` をベースに生成する。
+Jitter MOP オブジェクトの場合は `templates/external_jitter.cpp` をベースにする。
 プレースホルダ置換ルール:
 
 | プレースホルダ | 置換値 | 例 |
@@ -147,6 +148,68 @@ bbb_add_external(
 git commit count から自動生成する。
 `templates/generate_version.cmake` と `templates/CMakeLists.root.txt` のバージョン生成セクションを参照。
 `VERSION_MACRO` 変数でマクロ名を指定する (例: `BBB_OSC_VERSION`)。
+
+## Jitter (matrix_operator<>) External
+
+Jitter MOP オブジェクトを作成する場合は `matrix_operator<>` を継承し、
+`templates/external_jitter.cpp` をベースにする。
+
+### 基本構造
+
+```cpp
+class my_jitter : public c74::min::object<my_jitter>,
+                  public c74::min::matrix_operator<> {
+    // ...
+};
+```
+
+**テンプレート引数なし。** `matrix_operator<my_jitter>` はコンパイルエラー。
+
+### calc_cell パターン
+
+`calc_cell` はピクセル単位で呼ばれる。`plane_count` は 1, 4, 32 等で複数実体化されるため、
+`if constexpr` でガード必須:
+
+```cpp
+template <class matrix_type, size_t plane_count>
+c74::min::cell<matrix_type, plane_count> calc_cell(
+    c74::min::cell<matrix_type, plane_count> input,
+    const c74::min::matrix_info& info,
+    c74::min::matrix_coord& position)
+{
+    if constexpr (plane_count == 4) { /* RGBA */ }
+    return input;
+}
+```
+
+### Sink (入力 matrix を処理)
+
+`info.m_bip` が生 RGBA ポインタ。position(0,0) で一括キャプチャ:
+
+```cpp
+if (position.x() == 0 && position.y() == 0) {
+    std::memcpy(buffer, info.m_bip, info.width() * info.height() * 4);
+}
+```
+
+### Generator (出力 matrix を生成)
+
+入力 matrix なし。`calc_cell` 内でデコード済みデータをピクセルごとに書き込む。
+outlet type は `"jit_matrix"`。
+
+### outlet
+
+Jitter MOP の outlet type は `"jit_matrix"`。メッセージ用 outlet は `""`:
+
+```cpp
+c74::min::outlet<> matrix_out{this, "(jit_matrix)", "jit_matrix"};
+c74::min::outlet<> message_out{this, "(anything)"};
+```
+
+### 注意点
+
+- `docs/pitfalls.md` の #13 (calc_cell テンプレート), #14 (m_bip 生ポインタ) を必ず参照
+- Worker thread からの outlet 出力は `queue<>` 経由 (pitfall #2)
 
 ## トラップ・注意事項
 
