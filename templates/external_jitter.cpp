@@ -48,18 +48,19 @@ public:
 	//     const c74::min::matrix_info& info,
 	//     c74::min::matrix_coord& position)
 	// {
-	//     if constexpr(plane_count == 4) {
-	//         if(!m_has_frame.load(std::memory_order_acquire)) {
-	//             return {0, 0, 0, 255};
-	//         }
-	//         long x = position.x();
-	//         long y = position.y();
-	//         if(x == 0 && y == 0) {
-	//             m_has_frame.store(false, std::memory_order_release);
-	//             std::lock_guard<std::mutex> lock(m_frame_mutex);
-	//             m_render_frame.swap(m_decoded_frame);
-	//             m_has_frame.store(true, std::memory_order_release);
-	//         }
+	//         if constexpr(plane_count == 4) {
+	//             long x = position.x();
+	//             long y = position.y();
+	//             if(x == 0 && y == 0) {
+	//                 m_frame_available = m_has_frame.load(std::memory_order_acquire);
+	//                 if(m_frame_available) {
+	//                     std::lock_guard<std::mutex> lock(m_frame_mutex);
+	//                     m_render_frame.swap(m_decoded_frame);
+	//                 }
+	//             }
+	//             if(!m_frame_available) {
+	//                 return {0, 0, 0, 255};
+	//             }
 	//         if(x >= m_decoded_width || y >= m_decoded_height) {
 	//             return {0, 0, 0, 255};
 	//         }
@@ -82,6 +83,7 @@ private:
 	// std::vector<uint8_t> m_render_frame;
 	// long m_decoded_width = 0;
 	// long m_decoded_height = 0;
+	// bool m_frame_available = false;
 	// std::mutex m_frame_mutex;
 	// std::atomic<bool> m_has_frame{false};
 

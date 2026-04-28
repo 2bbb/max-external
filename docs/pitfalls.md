@@ -451,8 +451,10 @@ Windows API 全般 (RegisterClassEx, CreateWindowEx 等) で同様。
 // NG: リンカエラー (存在しないメソッド)
 hr = transform_->GetOutputType(stream_id, &output_type);
 
-// OK:
-hr = transform_->GetOutputAvailableType(stream_id, 0, &output_type);
+// OK: 現在設定されている output type を取得
+hr = transform_->GetOutputCurrentType(stream_id, &output_type);
+// OK: サポートされている type を列挙する場合
+hr = transform_->GetOutputAvailableType(stream_id, index, &output_type);
 ```
 
 `GetOutputAvailableType` の第二引数は type index (通常 0)。
