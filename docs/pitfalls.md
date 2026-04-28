@@ -323,6 +323,8 @@ c74::max::jit_object_method(mat, c74::max::gensym("lock"), (void*)savelock);
 ```cpp
 void* tex = c74::max::jit_object_findregistered(name);
 if (!tex) return;
+if (c74::max::jit_object_classname(tex) != c74::max::gensym("jit_gl_texture")) return;
+
 uint32_t gl_name = (uint32_t)(uintptr_t)c74::max::jit_object_method(tex, c74::max::gensym("gl_texture"));
 // gl_name が GLuint の GL texture name
 ```
