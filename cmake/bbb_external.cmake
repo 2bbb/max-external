@@ -7,8 +7,7 @@
 #       [DEPS lib1 lib2 ...]            # target_link_libraries に渡す依存
 #       [INCLUDES dir1 dir2 ...]        # target_include_directories に渡す追加パス
 #       [SOURCES file1.cpp ...]         # 追加ソース (省略時: *.cpp を自動収集)
-#       [RPATH path]                    # BUILD_RPATH / INSTALL_RPATH を設定
-#       [NO_HELP_COPY]                  # help ファイルの自動コピーを無効化
+#       [RPATH path]                  # BUILD_RPATH / INSTALL_RPATH を設定
 #   )
 #
 # 前提:
@@ -21,7 +20,7 @@
 
 macro(bbb_add_external)
     cmake_parse_arguments(BBB_ARG
-        "NO_HELP_COPY;MACOS_ONLY;WIN32_ONLY"
+        "MACOS_ONLY;WIN32_ONLY"
         "RPATH"
         "DEPS;INCLUDES;SOURCES"
         ${ARGN}
@@ -130,17 +129,6 @@ macro(bbb_add_external)
         )
     endif()
 
-    # --- help file copy ---
-    if(NOT BBB_ARG_NO_HELP_COPY)
-        set(_bbb_help_src "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.maxhelp")
-        set(_bbb_help_dst "${CMAKE_CURRENT_SOURCE_DIR}/../../../help/${PROJECT_NAME}.maxhelp")
-        if(EXISTS "${_bbb_help_src}")
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_bbb_help_src}" "${_bbb_help_dst}"
-            )
-        endif()
-    endif()
-
     # --- min-api post-target ---
     include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
 
@@ -148,10 +136,7 @@ macro(bbb_add_external)
 
     # --- cleanup: unset internal variables to avoid scope pollution (macro shares caller scope) ---
     unset(_bbb_sources)
-    unset(_bbb_help_src)
-    unset(_bbb_help_dst)
     unset(_bbb_should_build)
-    unset(BBB_ARG_NO_HELP_COPY)
     unset(BBB_ARG_MACOS_ONLY)
     unset(BBB_ARG_WIN32_ONLY)
     unset(BBB_ARG_RPATH)

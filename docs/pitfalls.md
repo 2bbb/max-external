@@ -273,3 +273,86 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${C74_LIBRARY_OUTPUT_DIRECTORY}"
 )
 ```
+
+## 19. Jitter external のメッセージハンドラ
+
+Jitter オブジェクト (`jit.*`) の場合、matrix 入力は `jit_matrix` メッセージで受け取る。
+GL texture 入力は `jit_gl_texture` メッセージで、**texture 名 (symbol)** が渡される:
+
+```cpp
+// jit_matrix: 入力 jit.matrix の名前 (symbol) が渡される
+c74::min::message<> jit_matrix{this, "jit_matrix",
+    MIN_FUNCTION {
+        if (args.empty()) return {};
+        auto name = static_cast<c74::min::symbol>(args[0]);
+        // jit.matrix からデータを取得
+        return {};
+    }
+};
+
+// jit_gl_texture: 内部 jit.gl.texture の名前 (symbol) が渡される
+c74::min::message<> jit_gl_texture{this, "jit_gl_texture",
+    MIN_FUNCTION {
+        if (args.empty()) return {};
+        auto name = static_cast<c74::min::symbol>(args[0]);
+        // jit.gl.texture から GL texture name を取得
+        return {};
+    }
+};
+```
+
+### jit_matrix からピクセルデータを取得
+
+```cpp
+void* mat = c74::max::jit_object_findregistered(c74::max::gensym(static_cast<std::string>(name).c_str()));
+if (!mat) return;
+auto* info = (c74::max::t_jit_matrix_info*)sysmem_newptr(sizeof(c74::max::t_jit_matrix_info));
+c74::max::jit_object_method(mat, c74::max::gensym("getinfo"), info);
+char* data = nullptr;
+c74::max::jit_object_method(mat, c74::max::gensym("getdata"), &data);
+// info->dim[0], info->dim[1], info->type, info->planecount 等を参照
+```
+
+### jit_gl_texture から GL texture ID を取得
+
+```cpp
+void* tex = c74::max::jit_object_findregistered(c74::max::gensym(static_cast<std::string>(name).c_str()));
+if (!tex) return;
+long gl_name = 0;
+c74::max::jit_object_method(tex, c74::max::gensym("gl_texture"), &gl_name);
+// gl_name が GLuint の GL texture name
+```
+
+## 20. help/ ディレクトリが maxhelp の正規の場所
+
+`.maxhelp` ファイルは `help/` ディレクトリに直接配置して git で管理する。
+`source/projects/` には置かない。配布パッケージでは `help/` ごとコピーする。
+
+```
+help/
+├── bbb.xxx.send.maxhelp
+├── bbb.xxx.receive.maxhelp
+└── ...
+```
+
+## 21. 依存ライブラリを add_subdirectory で組み込む場合
+
+静的ライブラリを external と一緒にビルドする場合、ルート `CMakeLists.txt` で
+`add_subdirectory()` を呼ぶ前にテスト・例題を無効化する:
+
+```cmake
+set(NOZZLE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(NOZZLE_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/mylib)
+```
+
+依存先が `CMAKE_MSVC_RUNTIME_LIBRARY` を設定している場合、
+`cmake_policy(SET CMP0091 NEW)` を `project()` より前に置くこと:
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+if(POLICY CMP0091)
+    cmake_policy(SET CMP0091 NEW)
+endif()
+project(my_project)
+```
