@@ -24,10 +24,10 @@ project/
 ├── deps/
 │   └── min-api/                # git submodule (max-sdk-base を含む)
 ├── source/
-│   │   └── projects/
-│   │       └── bbb.xxx.yyy/        # external ごとのディレクトリ
-│   │           ├── CMakeLists.txt  # bbb_add_external() 呼び出しのみ (1〜5行)
-│   │           └── bbb.xxx.yyy.cpp
+│   ├── projects/
+│   │   └── bbb.xxx.yyy/        # external ごとのディレクトリ
+│   │       ├── CMakeLists.txt  # bbb_add_external() 呼び出しのみ (1〜5行)
+│   │       └── bbb.xxx.yyy.cpp
 │   └── bbb/                    # 共有ヘッダ (任意)
 ├── help/                       # .maxhelp ファイル (正規の場所)
 ├── externals/                  # ビルド成果物 (.mxo / .mxe64)

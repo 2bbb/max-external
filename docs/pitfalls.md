@@ -304,19 +304,19 @@ c74::min::message<> jit_gl_texture{this, "jit_gl_texture",
 ### jit_matrix からピクセルデータを取得
 
 ```cpp
-void* mat = c74::max::jit_object_findregistered(c74::max::gensym(static_cast<std::string>(name).c_str()));
+void* mat = c74::max::jit_object_findregistered(name);
 if (!mat) return;
-auto* info = (c74::max::t_jit_matrix_info*)sysmem_newptr(sizeof(c74::max::t_jit_matrix_info));
-c74::max::jit_object_method(mat, c74::max::gensym("getinfo"), info);
+c74::max::t_jit_matrix_info info;
+c74::max::jit_object_method(mat, c74::max::gensym("getinfo"), &info);
 char* data = nullptr;
 c74::max::jit_object_method(mat, c74::max::gensym("getdata"), &data);
-// info->dim[0], info->dim[1], info->type, info->planecount 等を参照
+// info.dim[0], info.dim[1], info.type, info.planecount 等を参照
 ```
 
 ### jit_gl_texture から GL texture ID を取得
 
 ```cpp
-void* tex = c74::max::jit_object_findregistered(c74::max::gensym(static_cast<std::string>(name).c_str()));
+void* tex = c74::max::jit_object_findregistered(name);
 if (!tex) return;
 long gl_name = 0;
 c74::max::jit_object_method(tex, c74::max::gensym("gl_texture"), &gl_name);
