@@ -412,13 +412,17 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
     if (position.x() == 0 && position.y() == 0) {
         int w = static_cast<int>(info.width());
         int h = static_cast<int>(info.height());
-        // m_bip は生ピクセルデータ (サイズ = w * h * planecount * cellsize)
-        auto size = info.width() * info.height() * info.planecount() * info.cellsize();
+        // m_bip は生ピクセルデータ (cellsize は planecount を含む)
+        auto size = info.width() * info.height() * info.cellsize();
         std::memcpy(m_frame_buffer.data(), info.m_bip, size);
     }
     return input;
 }
 ```
+
+**注意:** `m_bip` が指すデータが行パディングなしで連続している前提。
+Jiter は通常パディングなしだが、`info.dimstride[1]` が `width * cellsize` と異なる場合は
+行ごとにコピーすること。
 
 **generator mode (受信側)** では入力 matrix が不要。`calc_cell` 内でデコード済みデータを
 書き込む。outlet type は `"jit_matrix"` になる。

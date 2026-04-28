@@ -1,5 +1,10 @@
 #include "c74_min.h"
 
+#include <atomic>
+#include <cstring>
+#include <mutex>
+#include <vector>
+
 class __CLASS_NAME__ : public c74::min::object<__CLASS_NAME__>, public c74::min::matrix_operator<> {
 public:
 	MIN_DESCRIPTION{"__DESCRIPTION__"};
@@ -10,10 +15,6 @@ public:
 
 	// === Sink (process incoming matrix) ===
 	// calc_cell is called for every pixel. Capture full frame at (0,0).
-	//
-	// Member variables you'll need:
-	//   std::vector<uint8_t> m_frame_buffer;
-	//
 	template <class matrix_type, size_t plane_count>
 	c74::min::cell<matrix_type, plane_count> calc_cell(
 		c74::min::cell<matrix_type, plane_count> input,
@@ -22,7 +23,7 @@ public:
 	{
 		if constexpr(plane_count == 4) {
 			if(position.x() == 0 && position.y() == 0) {
-				auto size = info.width() * info.height() * info.planecount() * info.cellsize();
+				auto size = info.width() * info.height() * info.cellsize();
 				m_frame_buffer.resize(size);
 				std::memcpy(m_frame_buffer.data(), info.m_bip, size);
 			}
@@ -35,14 +36,6 @@ public:
 	// Uncomment and replace m_decoded_* with your data source.
 	// IMPORTANT: Do NOT lock a mutex inside calc_cell per-pixel — it kills
 	// real-time performance. Instead, swap the buffer at position(0,0) only.
-	//
-	// Member variables you'll need:
-	//   std::vector<uint8_t> m_decoded_frame;
-	//   std::vector<uint8_t> m_render_frame;
-	//   int m_decoded_width = 0;
-	//   int m_decoded_height = 0;
-	//   std::mutex m_frame_mutex;
-	//   std::atomic<bool> m_has_frame{false};
 	//
 	// template <class matrix_type, size_t plane_count>
 	// c74::min::cell<matrix_type, plane_count> calc_cell(
@@ -77,12 +70,16 @@ public:
 private:
 	std::vector<uint8_t> m_frame_buffer;
 
-	// === Thread-safe message passing ===
-	// Worker threads must use queue<> to send outlet messages.
-	// Uncomment when handling callbacks from worker threads:
-	//
+	// Generator pattern member variables (uncomment when needed):
+	// std::vector<uint8_t> m_decoded_frame;
+	// std::vector<uint8_t> m_render_frame;
+	// int m_decoded_width = 0;
+	// int m_decoded_height = 0;
+	// std::mutex m_frame_mutex;
+	// std::atomic<bool> m_has_frame{false};
+
+	// Thread-safe message passing (uncomment when handling worker thread callbacks):
 	// c74::min::queue<> m_queue{this, MIN_FUNCTION {
-	//     // Swap pending messages under lock, then send on main thread
 	//     return {};
 	// }};
 };

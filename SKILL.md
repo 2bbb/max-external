@@ -188,7 +188,7 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
 
 ```cpp
 if (position.x() == 0 && position.y() == 0) {
-    auto size = info.width() * info.height() * info.planecount() * info.cellsize();
+    auto size = info.width() * info.height() * info.cellsize();
     m_frame_buffer.resize(size);
     std::memcpy(m_frame_buffer.data(), info.m_bip, size);
 }
