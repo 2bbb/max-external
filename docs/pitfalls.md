@@ -308,8 +308,10 @@ void* mat = c74::max::jit_object_findregistered(name);
 if (!mat) return;
 c74::max::t_jit_matrix_info info;
 c74::max::jit_object_method(mat, c74::max::gensym("getinfo"), &info);
+long savelock = (long)c74::max::jit_object_method(mat, c74::max::gensym("lock"), 1);
 char* data = (char*)c74::max::jit_object_method(mat, c74::max::gensym("getdata"));
-// info.dim[0], info.dim[1], info.type, info.planecount 等を参照
+// info.dim[0], info.dim[1], info.type, info.planecount 等を参照して処理
+c74::max::jit_object_method(mat, c74::max::gensym("lock"), (void*)savelock);
 ```
 
 ### jit_gl_texture から GL texture ID を取得
@@ -317,7 +319,7 @@ char* data = (char*)c74::max::jit_object_method(mat, c74::max::gensym("getdata")
 ```cpp
 void* tex = c74::max::jit_object_findregistered(name);
 if (!tex) return;
-long gl_name = (long)c74::max::jit_object_method(tex, c74::max::gensym("gl_texture"));
+long gl_name = (long)(uintptr_t)c74::max::jit_object_method(tex, c74::max::gensym("gl_texture"));
 // gl_name が GLuint の GL texture name
 ```
 
