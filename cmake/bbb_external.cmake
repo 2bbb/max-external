@@ -100,6 +100,14 @@ macro(bbb_add_external)
         endforeach()
     endforeach()
 
+    # --- MSVC: report correct __cplusplus value ---
+    # Without /Zc:__cplusplus, MSVC reports __cplusplus as 199711L regardless
+    # of the actual C++ standard, causing #error in headers that check it
+    # (e.g. bbb/core/constants.hpp).
+    if(MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
+    endif()
+
     # --- build library ---
     add_library(${PROJECT_NAME} MODULE ${_bbb_sources})
 
