@@ -51,7 +51,7 @@ public:
 	//         long y = position.y();
 	//         if(x == 0 && y == 0) {
 	//             std::lock_guard<std::mutex> lock(m_frame_mutex);
-	//             m_render_frame = m_decoded_frame;
+	//             m_render_frame.swap(m_decoded_frame);
 	//         }
 	//         if(x >= m_decoded_width || y >= m_decoded_height) {
 	//             return {0, 0, 0, 255};
@@ -73,8 +73,8 @@ private:
 	// Generator pattern member variables (uncomment when needed):
 	// std::vector<uint8_t> m_decoded_frame;
 	// std::vector<uint8_t> m_render_frame;
-	// int m_decoded_width = 0;
-	// int m_decoded_height = 0;
+	// long m_decoded_width = 0;
+	// long m_decoded_height = 0;
 	// std::mutex m_frame_mutex;
 	// std::atomic<bool> m_has_frame{false};
 

@@ -410,10 +410,9 @@ c74::min::cell<matrix_type, plane_count> calc_cell(
     c74::min::matrix_coord& position)
 {
     if (position.x() == 0 && position.y() == 0) {
-        int w = static_cast<int>(info.width());
-        int h = static_cast<int>(info.height());
         // m_bip は生ピクセルデータ (cellsize は planecount を含む)
         auto size = info.width() * info.height() * info.cellsize();
+        m_frame_buffer.resize(size);
         std::memcpy(m_frame_buffer.data(), info.m_bip, size);
     }
     return input;
